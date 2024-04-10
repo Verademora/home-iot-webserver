@@ -1,18 +1,8 @@
 mod config;
-mod models {
-    use serde::{Deserialize, Serialize};
-    use tokio_pg_mapper_derive::PostgresMapper;
-
-    #[derive(Deserialize, PostgresMapper, Serialize)]
-    #[pg_mapper(table = "data")]
-    pub struct SensorData {
-        pub temperature: f32,
-        pub humidity: f32,
-    }
-}
 mod db;
 mod errors;
 mod handlers;
+mod models;
 use ::config::Config;
 use actix_web::{web, App, HttpServer};
 use dotenvy::dotenv;
@@ -41,8 +31,9 @@ async fn main() -> std::io::Result<()> {
                 .route(web::get().to(get_data)),
         )
     })
-    .bind(("127.0.0.1", 8080))?
+    .bind(config.server_addr.clone())?
     .run();
+    println!("Server running on http://{}/", config.server_addr);
 
     server.await
 }
